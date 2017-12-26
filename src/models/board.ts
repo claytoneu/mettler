@@ -1,202 +1,193 @@
-export const ResourceType = {
-    Wheat: "WHEAT",
-    Brick: "BRICK",
-    Sheep: "SHEEP",
-    Ore: "ORE",
-    Wood: "WOOD",
-    Desert: "DESERT",
+import { Hex as Hex, BoardState } from '../models/boardstate';
+import { Edge as Edge } from '../models/boardstate';
+import { Vertex as Vertex } from '../models/boardstate';
+import { Layout as Layout } from './boardsetup';
+import { LayoutHex as LayoutHex } from './boardsetup';
+import * as BoardSetup from './boardsetup';
+
+export enum Player {
+    Blue = "BLUE",
+    Red = "RED",
+    White = "WHITE",
+    Green = "GREEN",
+    Yellow = "YELLOW",
+    Brown = "BROWN"
+}
+
+export enum ResourceType {
+    Wheat = "WHEAT",
+    Brick = "BRICK",
+    Sheep = "SHEEP",
+    Ore = "ORE",
+    Wood = "WOOD",
+    Desert = "DESERT",
 };
 
-export class Building {
-    color: string;
+const ResourceHexCounts = {};
+ResourceHexCounts[ResourceType.Wheat] = 6;
+ResourceHexCounts[ResourceType.Brick] = 5;
+ResourceHexCounts[ResourceType.Sheep] = 6;
+ResourceHexCounts[ResourceType.Ore] = 5;
+ResourceHexCounts[ResourceType.Wood] = 6;
+ResourceHexCounts[ResourceType.Desert] = 2;
 
-    constructor(color: string) {
-        this.color = color;
+export enum PortType {
+    ThreeForOne = "THREE_FOR_ONE",
+    Wheat = "WHEAT",
+    Brick = "BRICK",
+    Sheep = "SHEEP",
+    Ore = "ORE",
+    Wood = "WOOD",
+}
+
+const PortHexCounts = {};
+PortHexCounts[PortType.ThreeForOne] = 5;
+PortHexCounts[PortType.Wheat] = 1;
+PortHexCounts[PortType.Brick] = 1;
+PortHexCounts[PortType.Sheep] = 2;
+PortHexCounts[PortType.Ore] = 1;
+PortHexCounts[PortType.Wood] = 1;
+
+export enum PortDirection {
+    N = "N",
+    NW = "NW",
+    NE = "NE",
+    S = "S",
+    SW = "SW",
+    SE = "SE"
+}
+
+// Hexes
+export class ResourceHex extends Hex {
+    resourceType: ResourceType;
+    resourceNumber?: number;
+
+    constructor(x:number, y:number, resourceType:ResourceType) {
+        super(x, y);
+        this.resourceType = resourceType;
+        this.resourceNumber = undefined;
     }
 }
 
-export class Hex {
-    x: number;
-    y: number;
-    resourceType?: string;
+export class PortHex extends Hex {
+    portType: PortType;
+    direction: PortDirection;
 
-    constructor(x:number, y:number) {
-        this.x = x;
-        this.y = y;
-        this.resourceType = undefined;
+    constructor(x:number, y:number, portType:PortType, direction: PortDirection) {
+        super(x, y);
+        this.portType = portType;
+        this.direction = direction;
     }
-};
+}
 
-export class Edge {
-    x:number;
-    y:number;
+// Roads
+export class Road extends Edge {
+    owner: Player;
 
-    constructor(x:number, y:number) {
-        this.x = x;
-        this.y = y;
+    constructor(edge: Edge, owner: Player) {
+        super(edge.x, edge.y);
+        this.owner = owner;
     }
-};
+}
 
-export class Vertex {
-    x: number;
-    y: number;
-    building?: Building; 
+// Nodes
+export class Node extends Vertex {
+    building?: Building;
+    port?: PortType;
 
     constructor(x:number, y:number) {
-        this.x = x;
-        this.y = y;
+        super(x, y);
         this.building = undefined;
-    }
-};
-
-export class Board {
-    numColumns: number;
-    numRows: number;
-    hexes: Array<Array<Hex>>;
-    edges: Array<Array<Edge>>;
-    vertices: Array<Array<Vertex>>;
-
-    constructor(numColumns: number, numRows: number) {    
-        this.numColumns = numColumns;
-        this.numRows = numRows;
-
-        // Create matrices for hexes, edges and vertices
-        this.hexes = Array(this.numColumns);
-
-        for(let col=0; col<this.numColumns; col++){
-            this.hexes[col] = Array(this.numRows).fill(null);
-            for(let row=0; row<this.numRows; row++) {
-                this.hexes[col][row] = new Hex(col, row);
-            }
-        };
-
-        // Initialize the edge and vertex matrices
-        let numEdgeMatrixCols = this.numColumns*2+2;
-        let numEdgeMatrixRows = this.numRows*2+2;
-
-        this.edges = Array(numEdgeMatrixCols).fill(null);
-        this.vertices = Array(numEdgeMatrixCols).fill(null);
-
-        for(let x=0; x<numEdgeMatrixCols; x++) {
-            this.edges[x] = Array(numEdgeMatrixRows).fill(null);
-            this.vertices[x] = Array(numEdgeMatrixRows).fill(null);
-
-            for(let y=0; y<numEdgeMatrixRows; y++) {
-                this.edges[x][y] = new Edge(x, y);
-                this.vertices[x][y] = new Vertex(x, y);
-            }
-        }
-    };
-
-    // Hex Queries
-    hexesAdjacentTo(hex: Hex): Array<Hex> {
-        let x = hex.x;
-        let y = hex.y;
-        let offset = (x % 2 == 0) ? 1 : -1;
-
-        let neighbours: Array<Hex> = [
-            this.hexes[x][y+1],
-            this.hexes[x][y-1],
-            this.hexes[x+1][y],
-            this.hexes[x-1][y],
-            this.hexes[x+1][y+offset],
-            this.hexes[x-1][y+offset]
-        ];
-        return neighbours;
-    };
-
-    verticesOfHex(hex: Hex): Array<Vertex> {
-        let x = hex.x;
-        let y = hex.y;
-        let offset = -(x % 2);
-            
-        let vertices: Array<Vertex> = [
-            this.vertices[x][2*y+offset],
-            this.vertices[x][2*y+1+offset],
-            this.vertices[x][2*y+2+offset],
-            this.vertices[x+1][2*y+offset],
-            this.vertices[x+1][2*y+1+offset],
-            this.vertices[x+1][2*y+2+offset]
-        ]
-        return vertices;
-    }
-
-    edgesOfHex(hex: Hex): Array<Edge> {
-        let x = hex.x;
-        let y = hex.y;
-        let offset = -(x % 2);
-        
-        let edges: Array<Edge> = [
-            this.edges[2*x][2*y+offset],
-            this.edges[2*x][2*y+1+offset],
-            this.edges[2*x+1][2*y+offset],
-            this.edges[2*x+1][2*y+2+offset],
-            this.edges[2*x+2][2*y+offset],
-            this.edges[2*x+2][2*y+1+offset]
-        ];
-        return edges;
-    };
-
-    // Vertex Queries
-    hexesOfVertex(vertex: Vertex): Array<Hex> {
-        let x = vertex.x;
-        let y = vertex.y;
-        let xOffset = x % 2;
-        let yOffset = y % 2;
-                
-        if(yOffset == 0) {
-            // (Odd X, Even Y) || ( Even X, Even Y)
-            return [
-                this.hexes[x-xOffset][y/2-1],
-                this.hexes[x-1][y/2],
-                this.hexes[x-0][y/2]
-            ];    
-        } else if (xOffset == 1) {
-            // (Odd X, Odd Y)
-            return [
-                this.hexes[x-0][(y-1)/2],
-                this.hexes[x-1][(y-1)/2],
-                this.hexes[x-0][(y+1)/2]
-            ];
-        } else {
-            // (Even X, Odd Y)
-            return [
-                this.hexes[x-1][(y-1)/2],
-                this.hexes[x-1][(y+1)/2],
-                this.hexes[x-0][(y-1)/2]
-            ]
-        };
-    }
-
-    edgesOfVertex(vertex: Vertex): Array<Edge> {
-        let x = vertex.x;
-        let y = vertex.y;
-        let offset = (x % 2 == y % 2)? 1 : -1;
-    
-        return [
-            this.edges[x*2][y-1],
-            this.edges[x*2][y],
-            this.edges[x*2+offset][y],
-        ];
-    };
-
-    // Edge Queries
-    verticesOfEdge(edge: Edge): Array<Vertex> {
-        let x = edge.x;
-        let y = edge.y;
-        let xOffset = x % 2;
-        
-        if(xOffset == 0) {
-            return [
-                this.vertices[x/2][y],
-                this.vertices[x/2][y+1]
-            ];
-        } else {
-            return [
-                this.vertices[(x-1)/2][y],
-                this.vertices[(x+1)/2][y]
-            ]
-        };
+        this.port = undefined;
     }
 }
 
+export interface Building {
+    owner: Player;
+}
+
+export class Settlement implements Building {
+    owner: Player;
+
+    constructor(owner: Player) {
+        this.owner = owner;
+    }
+}
+
+export class City implements Building {    
+    owner: Player;
+
+    constructor(owner: Player) {
+        this.owner = owner;
+    }
+}
+
+// The Board
+export class Board {
+
+}
+
+function initResourceOrder(): ResourceType[] {
+    let resourceOrder: ResourceType[] = [];
+
+    for(let resourceType in ResourceHexCounts) {
+        let numHexes = ResourceHexCounts[resourceType];
+        for(let i = 0; i < numHexes; i++) {
+            resourceOrder.push(resourceType as ResourceType);
+        }
+    }
+    return BoardSetup.shuffle(resourceOrder);
+}
+
+function initPortOrder(): PortType[] {
+    let portOrder: PortType[] = [];
+
+    for(let portType in PortHexCounts) {
+        let numHexes = ResourceHexCounts[portType];
+        for(let i = 0; i < numHexes; i++) {
+            portOrder.push(portType as PortType);
+        }
+    }
+    return BoardSetup.shuffle(portOrder);
+}
+
+/*
+   Returns a 2D array of randomized port and resource hexes according to the Layout.
+*/
+function setupBoard(boardState: BoardState) {
+   let resourceOrder = initResourceOrder();
+    let portOrder = initPortOrder();
+    
+    // Iterate through Layout, generating hexes and linking ports to vertices as needed
+    for(let x=0; x<Layout.length; x++) {
+        let layoutCol = Layout[x];
+        for(let y=0; y>layoutCol.length; y++) {
+            let layoutHex = Layout[x][y];
+
+            switch(layoutHex) {
+                case LayoutHex.Land: {
+                    let resourceType = resourceOrder.pop() as ResourceType;
+                    boardState.setHexes[x][y] = new ResourceHex(x, y, resourceType);
+                    break;
+                }
+
+                case LayoutHex.PortN: {
+                    // Add the new port to hex matrix
+                    let portType = portOrder.pop() as PortType;
+                    hexes[x][y] = new PortHex(x, y, portType, PortDirection.N);
+
+                    // Create new trading port nodes and update vertices matrix
+
+                }
+
+                default: {
+                    hexes[x][y] = new Hex(x, y);
+                    break;
+                }
+            }
+
+        }
+    }
+
+    return hexes;
+}
