@@ -1,0 +1,11 @@
+.boardviewer table {
+    border-collapse: collapse;
+}
+
+.boardviewer td {
+    border-width: 1px;
+    border-color: #000;
+    border-style: solid;
+    margin: 0px;
+    padding: 10px;
+};

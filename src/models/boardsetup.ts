@@ -28,45 +28,32 @@ export const Layout = [
 ];
 
 export const ResourceTokens = {
-    "a":2,
-    "b":5,
-    "c":4,
-    "d":6,
-    "e":3,
-    "f":9,
-    "g":8,
-    "h":11,
-    "i":11,
-    "j":10,
-    "k":6,
-    "l":3,
-    "m":8,
-    "n":4,
-    "o":8,
-    "p":10,
-    "q":11,
-    "r":12,
-    "s":10,
-    "t":5,
-    "u":4,
-    "v":9,
-    "w":5,
-    "x":9,
-    "y":12,
-    "za":3,
-    "zb":2,
-    "zc":6
-}
-
-export function shuffle(arr: any[]) {
-    let shuffled = arr.slice();
-    let temp = undefined;
-
-    for(let i=0; i<shuffled.length; i++) {
-        let newIndex = Math.floor(Math.random() * shuffled.length);
-        temp = shuffled[newIndex];
-        shuffled[newIndex] = shuffled[i];
-        shuffled[i] = temp;
-    }
-    return shuffled;
-}
+    'a': 2,
+    'b': 5,
+    'c': 4,
+    'd': 6,
+    'e': 3,
+    'f': 9,
+    'g': 8,
+    'h': 11,
+    'i': 11,
+    'j': 10,
+    'k': 6,
+    'l': 3,
+    'm': 8,
+    'n': 4,
+    'o': 8,
+    'p': 10,
+    'q': 11,
+    'r': 12,
+    's': 10,
+    't': 5,
+    'u': 4,
+    'v': 9,
+    'w': 5,
+    'x': 9,
+    'y': 12,
+    'za': 3,
+    'zb': 2,
+    'zc': 6
+};

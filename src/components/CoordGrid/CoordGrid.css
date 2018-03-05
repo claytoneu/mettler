@@ -1,0 +1,25 @@
+.coordgrid-body {
+    display: table-row-group;
+}
+
+.coordgrid-table {
+    display: table;
+    border-collapse: collapse;
+}
+
+.coordgrid-row {
+    display: table-row;
+}
+
+.coordgrid-cell {
+    display: table-cell;
+    border-width: 1px;
+    border-color: #000;
+    border-style: solid;
+    margin: 0px;
+    padding: 2px;
+}
+
+.highlighted {
+    background-color: aqua;
+}

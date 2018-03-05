@@ -1,8 +1,8 @@
-import { BoardState as BoardState } from '../models/boardstate';
-import { Hex as Hex } from '../models/boardstate';
-import { Edge as Edge } from '../models/boardstate';
-import { Vertex as Vertex } from '../models/boardstate';
-import { intersection as intersection } from '../util';
+import { HexBoard as HexBoard } from '../../models/hexboard';
+import { Hex as Hex } from '../../models/hexboard';
+import { Edge as Edge } from '../../models/hexboard';
+import { Vertex as Vertex } from '../../models/hexboard';
+import { intersectArrays as intersectArrays } from '../../common/util';
 
 // Create empty array of hexes
 let numColumns = 9;
@@ -15,8 +15,7 @@ for(let col=0; col<numColumns; col++){
         hexes[col][row] = new Hex(col, row);
     }
 };
-let b = new BoardState(hexes);
-
+let b = new HexBoard(hexes);
 
 describe("Queries returning Hexes", () => {
     it('should return 6 correct adjacent hexes', () => {
@@ -133,8 +132,8 @@ describe("Queries returning Vertices", () => {
         let verticesB = b.verticesOfHex(b.hex(4, 4));
         let verticesC = b.verticesOfHex(b.hex(5, 4));
 
-        let commonVertices: Array<Vertex> = intersection(verticesA, verticesB);
-        commonVertices = intersection(commonVertices, verticesC);
+        let commonVertices: Array<Vertex> = intersectArrays(verticesA, verticesB);
+        commonVertices = intersectArrays(commonVertices, verticesC);
 
         expect(commonVertices.length).toEqual(1);
     });
@@ -166,7 +165,7 @@ describe("Queries returning Vertices", () => {
         let foundVertices = new Array<Vertex>(0);        
         for(let edge of hexEdges) {
             let vertices = b.verticesOfEdge(edge);
-            expect(intersection(vertices, hexVertices).length).toEqual(2);
+            expect(intersectArrays(vertices, hexVertices).length).toEqual(2);
 
             vertices.forEach(vertex => {
                 if(foundVertices.indexOf(vertex) < 0) {
@@ -175,7 +174,7 @@ describe("Queries returning Vertices", () => {
             });
         }
         expect(foundVertices.length).toEqual(6);
-        expect(intersection(foundVertices, hexVertices).length).toEqual(hexVertices.length);
+        expect(intersectArrays(foundVertices, hexVertices).length).toEqual(hexVertices.length);
     });
 });
 
@@ -192,7 +191,7 @@ describe("Queries returning Edges", () => {
         ];
 
         for(let neighbourEdges of neighbourHexEdges) {
-            expect(intersection(edges, neighbourEdges).length).toEqual(1);
+            expect(intersectArrays(edges, neighbourEdges).length).toEqual(1);
         }
     });
 
@@ -203,9 +202,9 @@ describe("Queries returning Edges", () => {
         let neighbourEdgesB = b.edgesOfVertex(b.vertex(5, 6));
         let neighbourEdgesC = b.edgesOfVertex(b.vertex(5, 8));
 
-        expect(intersection(edges, neighbourEdgesA).length).toEqual(1);
-        expect(intersection(edges, neighbourEdgesB).length).toEqual(1);
-        expect(intersection(edges, neighbourEdgesC).length).toEqual(1);
+        expect(intersectArrays(edges, neighbourEdgesA).length).toEqual(1);
+        expect(intersectArrays(edges, neighbourEdgesB).length).toEqual(1);
+        expect(intersectArrays(edges, neighbourEdgesC).length).toEqual(1);
     });
 
     it('should return the correct edge common to 2 adjacent hexes', () => {
